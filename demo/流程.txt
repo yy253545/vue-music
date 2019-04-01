@@ -1,0 +1,139 @@
+一.先进行安装 
+	
+	1 全局安装
+  	cnpm install vue-cli-g    -g表示全局安装  vue-V 可查看安装版本
+  	
+  	2 vue inti webpack demo 
+  	
+  	3 cnpm install
+  	在components 中创建一个文件夹叫头部,头部是公共的,tabs是切换页面的部分，也就是切换组件 
+  	写好 <router-link> 进行切换  to="/文件名" 注意要加
+  	
+  	4 在app.vue中写入 :
+  	import headers from '@/components/header'
+  	import tab from '@/components/tabs'
+  	也就是帮步骤3 进行引入
+  	然后注册
+  	components:{
+    	headers,
+    	tab
+  	}
+  	上面的模块中写入<headers>跟<tab>的组件
+
+  	5 src中创建一个公共的样式文件
+  	将公共样式全部放进去
+
+  	6 src中创建一个views文件夹 用于放tabs所router-link的各个页面 好做切换
+  	  views中创建router-link的各个文件夹跟index.vue的路由
+  	其中 连接几个文件  就必需要在router文件夹下进行路由的配置
+  	如：
+  	import	Love from '@/views/love/'
+	import	Singer from '@/views/singer/'
+	import	Rank from '@/views/rank/'
+	import	Search from '@/views/search/'
+	然后进行模块导出的配置
+	export default new Router({
+	mode:"history",
+  	routes: [
+	{
+		path:"/",
+		redirect:"/love"
+	},
+   	{
+   		path:'/love',
+   		component:Love,
+      children:[
+      {
+        path:'/love/:id',
+        component:LoveDetail
+      }
+    ]
+   	},
+   	{
+   		path:'/singer',
+   		component:Singer
+   	},
+   	{
+   		path:'/rank',
+   		component:Rank
+   	},
+   	{
+   		path:'/search',
+   		component:Search
+   	}
+  ]
+})
+	7 路由
+	如果路由里要用swiper
+	就要导入
+	import Swiper from 'swiper';
+	import 'swiper/dist/css/swiper.css'
+	swiper需要在挂载之前添加 也就是mounted()
+
+		
+	8 api接口
+	安装vue-rouer 
+	import router from './router'
+	import http from 'vue-resource'
+	的安装 是用于处理端口 不推荐 一般用axios
+	
+	src下创建一个文件夹叫api 用于存放端口
+	export function getLove(){
+	//https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?_=1553407255730&g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1
+	const url = "https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg" //地址
+	const params = {  //必填的东西  不知道是啥
+		g_tk:5318,
+		uin:0,
+		format:"jsonp",
+		inCharset:"utf-8",
+		outCharset:"utf-8",
+		notice:0,
+		platform:"h5",
+		needNewCode:1,
+		_:new Date().getTime()
+	}
+	const data = Object.assign(params,{jsonp:"jsonpCallback"}) 必填
+	return Vue.http.jsonp(url,data).then((res) => {  return出url跟data的数据
+		return Promise.resolve(res.data)
+	})
+}
+	9 路由接收
+	views中  (也就子组件中)
+	
+	import {之前api中的端口方法} from '@/api/' 用于接收端口数据
+	还要引入components中的singerList路由文件  并且在components中加入SingerList 用与上面写singer-list自定义语义标签 标签里绑定值  如 :singers = "之前data中创建的空数组"
+	路由用methods的事件接收 方法名叫getLoveData() 或者是自己定义的方法
+	 在export default中写入data方法  返回需要用到的数据参数 用对象 如 slider:[],
+				songlist:[]  方便在下面获取端口中data数据中的值
+	methods:{
+			//获取接口
+			getLoveData(){
+				getLove().then(res => {  es6写法  方便不写 var _this = this
+					console.log(res)
+					this.slider = res.data.slider 获取data.slider中的数据
+					this.songlist = res.data.songList  获取data.songList中的数据
+					this.isLoading = false
+				})
+			},
+		},
+	然后在钩子函数created中调用一便
+		created(){
+			this.getLoveData()
+		},
+
+	components 用于存放自定义模块 也就是组件 如果自定义了一个模块 就要在这个里面添加
+	
+
+	如果要对传过来的数据进行处理,可自己写一个方法(list) 参数为list 用于接收res.data.list 也就是端口接收到的值 然后先定义个空对象或空数组 视数据处理的内容而定 用for或者forEach进行循环这个list  然后将我们自己定义的数据进行端口数据的配置处理 并且把这些数据push进之前定义的空对象或者空数组中 
+
+
+	10 components中 父组件中
+		写入内容介绍 props的接收工作,子组件绑定的值的循环处理 以及之前自定义数据的渲染处理,还有css跟html结构的写入
+		还有功能的实现 js内容等等
+
+
+	css @import '~@/存放位置';
+
+	
+
+
